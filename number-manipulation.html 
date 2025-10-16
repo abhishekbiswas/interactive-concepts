@@ -1,0 +1,113 @@
+<!-- It is used to teach number manipulations (addition in this case) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Two-Digit Addition - Minimal</title>
+    <style>
+        /* CSS for Styling */
+        body {
+            /* Set pure white background and center content */
+            display: flex;
+            flex-direction: column; /* Use column to stack the title/note above the inputs */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        
+        /* The #addition-app styles have been removed */
+
+        h2 {
+            color: #007bff;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            width: 90px;
+            padding: 10px 15px;
+            font-size: 28px;
+            text-align: center;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: #0056b3;
+        }
+
+        #result {
+            font-weight: 700;
+            color: #28a745;
+            min-width: 80px; 
+            text-align: left;
+        }
+
+        span {
+            font-weight: 300;
+            color: #333;
+        }
+
+        .note {
+            font-size: 15px;
+            color: #6c757d;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Interactive Two-Digit Addition</h2>
+    
+    <div class="input-group">
+        <input type="number" id="numA" value="25" min="10" max="99" required>
+        <span>+</span>
+        <input type="number" id="numB" value="37" min="10" max="99" required>
+        <span>=</span>
+        <span id="result">62</span>
+    </div>
+    
+    <p class="note">Enter two-digit numbers (10 to 99) in the fields above.</p>
+
+    <script>
+        function calculateSum() {
+            const numAInput = document.getElementById('numA');
+            const numBInput = document.getElementById('numB');
+            const resultSpan = document.getElementById('result');
+
+            const valA = parseInt(numAInput.value) || 0;
+            const valB = parseInt(numBInput.value) || 0;
+
+            const sum = valA + valB;
+            resultSpan.textContent = sum;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const numAInput = document.getElementById('numA');
+            const numBInput = document.getElementById('numB');
+
+            calculateSum();
+
+            numAInput.addEventListener('input', calculateSum);
+            numBInput.addEventListener('input', calculateSum);
+        });
+    </script>
+
+</body>
+</html>
