@@ -1,0 +1,210 @@
+<!-- It is used to teach counting numbers -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Interactive Number Line with Transition</title>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+  body { font-family: sans-serif; margin: 20px; }
+  .controls { margin-bottom: 10px; }
+  .controls input { margin-right: 10px; }
+  .controls button { margin-right: 5px; }
+  .marker circle { cursor: pointer; }
+  .transition-line { fill: none; stroke: orange; stroke-width: 2; }
+</style>
+</head>
+<body>
+
+<h2>Interactive Number Line with Curved Transition</h2>
+
+<div class="controls">
+  <label>Start: <input type="number" id="start" value="0" style="width: 60px"></label>
+  <label>End: <input type="number" id="end" value="10" style="width: 60px"></label>
+  <label>Step: <input type="number" id="step" value="1" min="1" style="width: 50px"></label>
+  <label><input type="checkbox" id="showTicks" checked> Show Ticks</label>
+  <label><input type="checkbox" id="showLabels" checked> Show Labels</label>
+</div>
+
+<div class="controls">
+  <button id="playBtn">▶ Play</button>
+  <button id="pauseBtn" disabled>⏸ Pause</button>
+  <button id="decBtn">−</button>
+  <button id="incBtn">+</button>
+  <button id="resetBtn">Reset</button>
+</div>
+
+<div id="numberline"></div>
+
+<script>
+const width = 800, height = 140, margin = {left:50, right:50, top:20, bottom:30};
+const innerWidth = width - margin.left - margin.right;
+
+const svg = d3.select("#numberline")
+  .append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+let start = +document.getElementById("start").value;
+let end = +document.getElementById("end").value;
+let step = Math.max(1, Math.round(+document.getElementById("step").value));
+let showTicks = document.getElementById("showTicks").checked;
+let showLabels = document.getElementById("showLabels").checked;
+
+let scale = d3.scaleLinear().domain([start,end]).range([margin.left, margin.left + innerWidth]);
+
+// Draw base line
+svg.append("line")
+  .attr("x1", scale(start))
+  .attr("x2", scale(end))
+  .attr("y1", height/2)
+  .attr("y2", height/2)
+  .attr("stroke", "#444")
+  .attr("stroke-width", 3);
+
+// Ticks group
+const ticksG = svg.append("g").attr("class","ticks");
+
+// Transition line group
+const transG = svg.append("g").attr("class","transitions");
+
+// Marker
+let current = start;
+let prev = start;
+const marker = svg.append("g").attr("class","marker");
+marker.append("circle")
+  .attr("cx", scale(current))
+  .attr("cy", height/2)
+  .attr("r", 14)
+  .attr("fill","#3b82f6")
+  .attr("stroke","#0b5ed7")
+  .attr("stroke-width", 2);
+
+const markerLabel = marker.append("text")
+  .attr("x", scale(current))
+  .attr("y", height/2 - 20)
+  .attr("text-anchor", "middle")
+  .attr("fill","#08306b")
+  .attr("font-weight", "600")
+  .text(current);
+
+// --- Functions ---
+function drawTicks() {
+  ticksG.selectAll("*").remove();
+  if (!showTicks && !showLabels) return;
+  const values = d3.range(start, end + 1, step);
+  const ticks = ticksG.selectAll("g.tick").data(values, d=>d);
+  const tickEnter = ticks.enter().append("g").attr("class","tick");
+
+  tickEnter.append("line")
+    .attr("y1", height/2 - 8)
+    .attr("y2", height/2 + 8)
+    .attr("stroke", "#666")
+    .attr("stroke-width", 1);
+
+  tickEnter.append("text")
+    .attr("y", height/2 + 24)
+    .attr("text-anchor", "middle")
+    .attr("font-size", 14)
+    .text(d => d);
+
+  ticksG.selectAll("g.tick").attr("transform", d => `translate(${scale(d)},0)`);
+  ticksG.selectAll("line").style("display", showTicks ? null : "none");
+  ticksG.selectAll("text").style("display", showLabels ? null : "none");
+}
+
+function snapToValue(x) {
+  const v = scale.invert(x);
+  const clamped = Math.max(start, Math.min(end, v));
+  const k = Math.round((clamped - start) / step);
+  return start + k * step;
+}
+
+// Draw curved transition
+function drawTransition(from, to) {
+  const midX = (scale(from) + scale(to)) / 2;
+  const midY = height/2 - 40; // curve height
+  const pathData = `M${scale(from)},${height/2} Q${midX},${midY} ${scale(to)},${height/2}`;
+  const path = transG.append("path")
+    .attr("d", pathData)
+    .attr("class","transition-line")
+    .attr("stroke-opacity",1);
+  path.transition()
+    .duration(500)
+    .attr("stroke-opacity",0)
+    .remove();
+}
+
+function updateMarker(value, animate=false) {
+  prev = current;
+  current = Math.max(start, Math.min(end, value));
+  drawTransition(prev, current); // draw curved line
+
+  const cx = scale(current);
+  if (animate) {
+    marker.select("circle").transition().duration(300).attr("cx", cx);
+    markerLabel.transition().duration(300).attr("x", cx).tween("text", function() {
+      const that = d3.select(this), i = d3.interpolateNumber(+that.text(), current);
+      return t => that.text(Math.round(i(t)));
+    });
+  } else {
+    marker.select("circle").attr("cx", cx);
+    markerLabel.attr("x", cx).text(current);
+  }
+
+  ticksG.selectAll("g.tick text")
+    .attr("font-weight", d => d === current ? "700" : "400")
+    .attr("fill", d => d === current ? "#0b5ed7" : "#000");
+}
+
+// Drag behavior
+const drag = d3.drag()
+  .on("start drag", (event) => updateMarker(snapToValue(event.x)));
+marker.call(drag);
+
+// Initial draw
+drawTicks();
+updateMarker(current);
+
+// --- Controls ---
+let timer = null;
+
+function startPlay() {
+  if (timer) return;
+  document.getElementById("playBtn").disabled = true;
+  document.getElementById("pauseBtn").disabled = false;
+  timer = setInterval(() => {
+    if (current + step <= end) updateMarker(current + step, true);
+    else stopPlay();
+  }, 600);
+}
+
+function stopPlay() {
+  if (timer) { clearInterval(timer); timer = null; }
+  document.getElementById("playBtn").disabled = false;
+  document.getElementById("pauseBtn").disabled = true;
+}
+
+document.getElementById("playBtn").addEventListener("click", startPlay);
+document.getElementById("pauseBtn").addEventListener("click", stopPlay);
+document.getElementById("decBtn").addEventListener("click", () => updateMarker(current - step, true));
+document.getElementById("incBtn").addEventListener("click", () => updateMarker(current + step, true));
+document.getElementById("resetBtn").addEventListener("click", () => { updateMarker(start, true); stopPlay(); });
+
+// Input listeners
+["start","end","step","showTicks","showLabels"].forEach(id => {
+  document.getElementById(id).addEventListener("input", () => {
+    start = +document.getElementById("start").value;
+    end = +document.getElementById("end").value;
+    step = Math.max(1, Math.round(+document.getElementById("step").value));
+    showTicks = document.getElementById("showTicks").checked;
+    showLabels = document.getElementById("showLabels").checked;
+    scale.domain([start,end]);
+    drawTicks();
+    if (current < start || current > end) current = Math.max(start, Math.min(end, current));
+    updateMarker(current);
+  });
+});
+</script>
+</body>
+</html>
