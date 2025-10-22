@@ -15,11 +15,11 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: white; 
+            background-color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding: 20px;
         }
-        
+
         /* The #addition-app styles have been removed */
 
         h2 {
@@ -55,7 +55,7 @@
         #result {
             font-weight: 700;
             color: #28a745;
-            min-width: 80px; 
+            min-width: 80px;
             text-align: left;
         }
 
@@ -73,41 +73,41 @@
 </head>
 <body>
 
-    <h2>Interactive Two-Digit Addition</h2>
-    
-    <div class="input-group">
-        <input type="number" id="numA" value="25" min="10" max="99" required>
-        <span>+</span>
-        <input type="number" id="numB" value="37" min="10" max="99" required>
-        <span>=</span>
-        <span id="result">62</span>
-    </div>
-    
-    <p class="note">Enter two-digit numbers (10 to 99) in the fields above.</p>
+<h2>Interactive Two-Digit Addition</h2>
 
-    <script>
-        function calculateSum() {
-            const numAInput = document.getElementById('numA');
-            const numBInput = document.getElementById('numB');
-            const resultSpan = document.getElementById('result');
+<div class="input-group">
+    <input type="number" id="numA" value="25" min="10" max="99" required>
+    <span>+</span>
+    <input type="number" id="numB" value="37" min="10" max="99" required>
+    <span>=</span>
+    <span id="result">62</span>
+</div>
 
-            const valA = parseInt(numAInput.value) || 0;
-            const valB = parseInt(numBInput.value) || 0;
+<p class="note">Enter two-digit numbers (10 to 99) in the fields above.</p>
 
-            const sum = valA + valB;
-            resultSpan.textContent = sum;
-        }
+<script>
+    function calculateSum() {
+        const numAInput = document.getElementById('numA');
+        const numBInput = document.getElementById('numB');
+        const resultSpan = document.getElementById('result');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const numAInput = document.getElementById('numA');
-            const numBInput = document.getElementById('numB');
+        const valA = parseInt(numAInput.value) || 0;
+        const valB = parseInt(numBInput.value) || 0;
 
-            calculateSum();
+        const sum = valA + valB;
+        resultSpan.textContent = sum;
+    }
 
-            numAInput.addEventListener('input', calculateSum);
-            numBInput.addEventListener('input', calculateSum);
-        });
-    </script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const numAInput = document.getElementById('numA');
+        const numBInput = document.getElementById('numB');
+
+        calculateSum();
+
+        numAInput.addEventListener('input', calculateSum);
+        numBInput.addEventListener('input', calculateSum);
+    });
+</script>
 
 </body>
 </html>
